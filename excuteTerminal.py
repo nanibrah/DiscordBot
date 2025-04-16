@@ -7,7 +7,6 @@ import threading
 import datetime
 import aiohttp
 import subprocess
-import threading
 
 # Load token
 load_dotenv()
@@ -102,13 +101,6 @@ async def save_attachments(message, folder):
             voice_path = get_user_voice_path(message)
             await save_attachments(message, voice_path)
 
-def print_to_new_terminal(message):
-    """ In tin nhắn ra một terminal mới """
-    if os.name == 'nt':  # Windows
-        subprocess.Popen(["start", "cmd", "/K", f"echo {message}"], shell=True)
-    else:  # macOS hoặc Linux
-        subprocess.Popen(["gnome-terminal", "--", "bash", "-c", f"echo {message}; exec bash"])
-
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -121,22 +113,6 @@ async def on_message(message):
         log_text += "Đã gửi hình ảnh"
     else:
         log_text += message.content
-        
-    # Format hiển thị terminal
-    if message.guild:
-        prefix = f'[{format_time()}] <{message.guild.name}#{message.guild.id}>-<{message.channel.name}>-<{message.author.name}#{message.author.id}>:'
-    else:
-        prefix = f"[{format_time()}] DM: <{message.author.name}#{message.author.id}>:"
-        
-    if message.stickers:
-        content = f"Đã gửi sticker: {', '.join(s.name for s in message.stickers)}"
-    elif message.attachments:
-        content = "Đã gửi file/ảnh/âm thanh"
-    else:
-        content = message.content
-        
-    # In tin nhắn vào terminal mới
-    print_to_new_terminal(f"{prefix} {content}")
 
     # Log người dùng
     if message.author.id in log_user_ids:
