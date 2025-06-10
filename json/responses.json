@@ -1,0 +1,114 @@
+{
+    "bot_info": {
+        "ResponseAllContent": "True",
+        "keywords": [
+            "giới thiệu đi",
+            "giới thiệu bản thân",
+            "bạn là ai",
+            "mày là ai",
+            "ai đây",
+            "là ai",
+            "con là con của ai"
+        ],
+        "content": [
+            "Em là Lena. Em là con cả trong gia đình.",
+            "Hiện tại em đang sống cùng bố 🌽Bắp🌽 và giúp bố 🌽Bắp🌽 theo dõi mẹ 🧈Bơ🧈.",
+            "Em có thể giới thiệu một chút về bố và mẹ. Nếu muốn, thì hãy tag em và ghi 'giới thiệu về + bố hoặc mẹ em'!"
+        ]
+    },
+    "creator_info": {
+        "ResponseAllContent": "True",
+        "keywords": [
+            "người tạo",
+            "tạo ra",
+            "đẻ ra",
+            "ai làm",
+            "ông chủ",
+            "người làm ra",
+            "cha mày",
+            "cha của mày",
+            "cha em",
+            "cha của em",
+            "bố mày",
+            "bố của mày",
+            "bố em",
+            "bố của em",
+            "ai làm",
+            "ông chủ",
+            "người làm ra"
+        ],
+        "content": [
+            "Người tạo ra em hay là người sinh ra em là bố 🌽Bắp🌽",
+            "Bố Bắp em sinh năm 2008 và hiện đang ở Hà Nội 🏙️.",
+            "Đó là tất cả những gì em biết những gì em biết 😭. Bố em bí ẩn quá 🥹"
+        ]
+    },
+    "BotDuocgoi": {
+        "ResponseAllContent": "False",
+        "keywords": [
+            "con ơi",
+            "con yêu ơi",
+            "bé ơi",
+            "con oi",
+            "con yeu oi",
+            "be oi"
+        ],
+        "content": [
+            "Dạ. Con nghe ạ",
+            "Con đây ạ",
+            "Bé nghe ạ",
+            "Lena có mặt nhanh như 1 tia chớp. //vèo// Con có mặt ạ!"
+        ]
+    },
+    "custom_info": {
+        "Dad": {
+            "ResponseAllContent": "True",
+            "keywords": [
+                "bố của mày",
+                "bố của em",
+                "cha của mày",
+                "cha của em",
+                "dad của em",
+                "daddy của em",
+                "bố em",
+                "cja em",
+                "bố em i",
+                "cha em i",
+                "giới thiệu bố"
+            ],
+            "content": [
+                "Bố em là 🌽Bắp🌽. Sinh vào ngày này tháng kia năm 2008",
+                "Hiện đã có 3 con cùng mẹ 🧈Bơ🧈",
+                "Mà biết vậy thôi nha, chứ có thích bố em đâu mà hỏi."
+            ]
+        },
+        "Mom": {
+            "ResponseAllContent": "True",
+            "keywords": [
+                "mẹ của mày",
+                "mẹ của em",
+                "má của mày",
+                "má của em",
+                "mom của em",
+                "momy của em",
+                "mẹ em",
+                "má em",
+                "mẹ em i",
+                "má em i",
+                "giới thiệu mẹ"
+            ],
+            "content": [
+                "Mẹ em là 🧈Bơ🧈. Sinh vào ngày này tháng kia năm 2009",
+                "Hiện đã có 3 con cùng bố 🌽Bắp🌽",
+                "Mà biết vậy thôi nha, chứ có thích mẹ em đâu mà hỏi."
+            ]
+        },
+        "TagResponses": {
+            "ResponseAllContent": "False",
+            "content": [
+                "Tag người ta chi z tròi^^?",
+                "Vụ gì zọ:D"
+            ]
+        }
+    }
+}
