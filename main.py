@@ -1,20 +1,3 @@
-# -------------------------------------------
-# Project: Con của Bắp#9505
-# File: main.py
-# Author: Phạm Lợi
-# Discord: pap_corn
-# Created: 16/4/2025
-# Last Updated: 11/6/2025
-#
-# Version: 1.1
-#
-# Copyright (c) 2025 pap_corn
-# All rights reserved.
-#
-# Bạn không được phép sử dụng, sao chép, sửa đổi hoặc phân phối file này
-# nếu không có sự cho phép bằng văn bản từ tác giả.
-# -------------------------------------------
-
 #### Libraries ####
 import discord, asyncio, json, datetime, os, threading, re, random, aiohttp, json, time, stat
 from discord.ext import commands, tasks
@@ -613,7 +596,7 @@ async def say(interaction: discord.Interaction, message: str):
         return
 
     await interaction.response.send_message("✅ Đã gửi!", ephemeral=True)
-    await interaction.channel.send(message)
+    await interaction.channel.send(f"```{message}```")
     
 # WARN
 @bot.tree.command(name="warn", description="Cảnh cáo thành viên")
@@ -997,8 +980,9 @@ async def precise_loop():
         await asyncio.sleep(sleep_time)
 
 # CÀI ĐẶT CẤU HÌNH MUTED
-async def auto_setup_muted_role(guild: discord.Guild):
+async def auto_setup_role(guild: discord.Guild):
     muted_role = discord.utils.get(guild.roles, name="muted") or discord.utils.get(guild.roles, name="Muted")
+    default_role = guild.default_role
 
     # Tạo role nếu chưa có
     if not muted_role:
@@ -1007,7 +991,8 @@ async def auto_setup_muted_role(guild: discord.Guild):
         except discord.Forbidden:
             return
 
-    changed_channels = 0
+    muted_role_channel_changed = 0
+    default_role_channel_changed = 0
 
     for channel in guild.channels:
         try:
@@ -1026,11 +1011,28 @@ async def auto_setup_muted_role(guild: discord.Guild):
             overwrite.use_application_commands = False
 
             await channel.set_permissions(muted_role, overwrite=overwrite)
-            changed_channels += 1
+            muted_role_channel_changed += 1
         except Exception as e:
             print(f"⚠️ Lỗi ở kênh '{channel.name}' ({guild.name}): {e}")
 
-    print(f"🔧 Đã thiết lập quyền cho role 'muted' ở {changed_channels} kênh trong server '{guild.name}'.")
+    print(f"🔧 Đã thiết lập quyền cho role 'muted' ở {muted_role_channel_changed} kênh trong server '{guild.name}'.")
+    
+    for channel in guild.channels:
+        try: 
+            overwrite = channel.overwrites_for(default_role)
+            overwrite.create_instant_invite = False  
+            overwrite.send_messages_in_threads = False  
+            overwrite.create_public_threads = False 
+            overwrite.create_private_threads = False  
+            overwrite.mention_everyone = False
+                
+            await channel.set_permissions(default_role, overwrite=overwrite)
+            default_role_channel_changed += 1
+        except Exception as e:
+            print(f"⚠️ Lỗi ở kênh '{channel.name}' ({guild.name}): {e}")
+        
+    print(f"🔧 Đã thiết lập quyền cho role mặc định ở {muted_role_channel_changed} kênh trong server '{guild.name}'.\n")
+
 
 #### TERMINAL ####
 def terminal_interface():
@@ -1246,7 +1248,7 @@ def terminal_interface():
 @bot.event
 async def on_ready():
     for guild in bot.guilds:
-        await auto_setup_muted_role(guild)
+        await auto_setup_role(guild)
     bot.loop.create_task(precise_loop())
     await bot.wait_until_ready()
     synced = await bot.tree.sync(guild=None)
@@ -1258,4 +1260,21 @@ async def on_guild_join(guild: discord.Guild):
     print(f"➕ Bot đã được thêm vào server: {guild.name}")
     await auto_setup_muted_role(guild)
     
+# -------------------------------------------
+# Project: Con của Bắp#9505
+# File: main.py
+# Author: Phạm Lợi
+# Discord: pap_corn
+# Created: 16/4/2025
+# Last Updated: 11/6/2025
+#
+# Version: 1.1
+#
+# Copyright (c) 2025 pap_corn
+# All rights reserved.
+#
+# Bạn không được phép sử dụng, sao chép, sửa đổi hoặc phân phối file này
+# nếu không có sự cho phép bằng văn bản từ tác giả.
+# -------------------------------------------    
+
 bot.run(TOKEN)
