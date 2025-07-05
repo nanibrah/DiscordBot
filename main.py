@@ -1,6 +1,11 @@
 #### Libraries ####
-import discord, asyncio, json, datetime, os, threading, re, random, aiohttp, json, time, stat
-from discord.ext import commands, tasks
+import os
+# os.system("pip install -r requirements.txt")
+# os.system("pip install --upgrade --force-reinstall -r requirements.txt")
+
+import discord, asyncio, json, datetime, threading, re, random, aiohttp, time, stat
+from discord import app_commands
+from discord.ext import commands
 from dotenv import load_dotenv
 
 os.system('cls')  # on windows
@@ -31,6 +36,7 @@ CommandsForTerminal = """📖 Danh sách lệnh:
     logserver <server_id>    - Bắt đầu log toàn server.
     unlogserver <server_id>  - Dừng log server.
     listlogserver            - Liệt kê các server đang log.
+    leaveserver <server_id>  - Thoát bot khỏi server
     exit                     - Tắt bot.
 """
 
@@ -42,6 +48,7 @@ def ensure_dir(path):
 def safe_filename(s):
     return "".join(c for c in s if c.isalnum() or c in (' ', '.', '_', '-')).rstrip()
 
+# muted file process
 def get_muted_file_path(guild: discord.Guild):
     folder = f"json/{safe_filename(guild.name)}_{guild.id}/muted_user"
     ensure_dir(folder)
@@ -52,6 +59,18 @@ def save_muted_data(guild: discord.Guild, muted_users_info: dict):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(muted_users_info, f, ensure_ascii=False, indent=4)
         
+def load_muted_data(guild: discord.Guild) -> dict:
+    path = get_muted_file_path(guild)
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            try:
+                data = json.load(f)
+                return {int(k): v for k, v in data.items()}
+            except json.JSONDecodeError:
+                return {}
+    return {}
+
+# warn file process 
 def ensure_warn_path(guild):
     path = f"json/{guild.name}_{guild.id}/warn_user"
     os.makedirs(path, exist_ok=True)
@@ -69,18 +88,31 @@ def save_warn_data(guild, data):
     path = ensure_warn_path(guild)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
-        
-def load_muted_data(guild: discord.Guild) -> dict:
-    path = get_muted_file_path(guild)
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            try:
-                data = json.load(f)
-                return {int(k): v for k, v in data.items()}
-            except json.JSONDecodeError:
-                return {}
-    return {}
 
+# afk file process
+def get_afk_file_path(guild: discord.Guild):
+    folder = f"json/{safe_filename(guild.name)}_{guild.id}/afk_user"
+    ensure_dir(folder)
+    return os.path.join(folder, "afk_user.json")
+
+def save_afk_data(guild: discord.Guild, afk_users: dict):
+    path = get_afk_file_path(guild)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({str(k): v for k, v in afk_users.items()}, f, ensure_ascii=False, indent=4)
+        
+def load_afk_data(guild: discord.Guild) -> dict:
+    path = get_afk_file_path(guild)
+    if not os.path.exists(path):
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({}, f, ensure_ascii=False, indent=4)
+    with open(path, "r", encoding="utf-8") as f:
+        try:
+            data = json.load(f)
+            return {int(k): v for k, v in data.items()}
+        except json.JSONDecodeError:
+            return {}
+        
+# ------------------------
 def full_format_time():
     return datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y")
 
@@ -162,17 +194,41 @@ def parse_time(duration_str: str):
 async def role_autocomplete(interaction: discord.Interaction, current: str):
     roles = [role for role in interaction.guild.roles if current.lower() in role.name.lower()]
     return [
-        discord.app_commands.Choice(name=role.name, value=str(role.id))
+        app_commands.Choice(name=role.name, value=str(role.id))
         for role in roles[:25]
     ]
 
+async def banned_users_autocomplete(interaction: discord.Interaction, current: str):
+    results: list[app_commands.Choice[str]] = []
+
+    try:
+        bans = interaction.guild.bans()  # KHÔNG await
+        async for ban in bans:
+            user = ban.user
+            uid = str(user.id)
+            uname = f"{user.name}"
+            if current.lower() in uname.lower() or current in uid:
+                results.append(app_commands.Choice[str](  # RẤT QUAN TRỌNG
+                    name=f"{uname} ({uid})",
+                    value=uid  # Phải là string
+                ))
+
+                if len(results) >= 25:
+                    break
+
+        return results
+    except Exception as e:
+        print(f"[Autocomplete Error] {e}")
+        return []
+    
 # Duma đọc tên là biết
 async def mute_for_warn(interaction, member, reason, duration):
     guild = interaction.guild
     muted_role = discord.utils.get(guild.roles, name="muted") or discord.utils.get(guild.roles, name="Muted")
 
     await member.add_roles(muted_role, reason=reason)
-
+    
+    seconds = parse_time(duration)
     try:
         end_dt = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
         end_time_str = end_dt.strftime("%H:%M:%S - %d/%m/%Y")
@@ -194,67 +250,58 @@ async def mute_for_warn(interaction, member, reason, duration):
         
 #### Add command for user ####
 # AFK
-afk_users = {}
 @bot.tree.command(name="afk", description="Đặt trạng thái AFK")
-@discord.app_commands.describe(
+@app_commands.describe(
     reason="Lý do AFK"
 )
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(manage_messages=True)
 async def afk(interaction: discord.Interaction, reason: str = "Không rõ"):
-    # Kiểm tra lệnh có được triển khai trong máy chủ hay không
-    if interaction.guild is None:
-        await interaction.response.send_message(
+    afk_users = load_afk_data(interaction.guild)
+    
+    if interaction.user.id in afk_users:
+        return await interaction.response.send_message(
             embed = discord.Embed(
                 title="🚫 Chú ý",
-                description="❌ Vui lòng dùng lệnh này trong máy chủ!",
-                color=discord.Color.red()))
-        return
+                description="Bạn đã AFK TỪ TRƯỚC!",
+                color=discord.Color.red()), ephemeral=True)
     
     afk_users[interaction.user.id] = {
         "reason": reason,
         "time": full_format_time()
     }
+    save_afk_data(interaction.guild, afk_users)
+
     await interaction.response.send_message(
         embed = discord.Embed(
             title="✅ Thành công",
-            description=f"✅ {interaction.user.mention} đã được đặt trạng thái AFK.\n✏️ Lý do: **{reason}**",
+            description=f"{interaction.user.mention} đã được đặt trạng thái AFK.\n✏️ Lý do: **{reason}**",
             color=discord.Color.green()))
-
+    
 # ADD ROLE
 @bot.tree.command(name="addrole", description="Thêm một role cho người dùng")
-@discord.app_commands.describe(
+@app_commands.describe(
     member="Người cần được thêm role",
     role="Role cần thêm"
 )
-@commands.has_permissions(manage_roles=True)
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(manage_roles=True)
 async def addrole(interaction: discord.Interaction, member: discord.Member, role: discord.Role):
-    # Kiểm tra lệnh có được triển khai trong máy chủ hay không
-    if interaction.guild is None:
-        await interaction.response.send_message(
-            embed = discord.Embed(
-                title="🚫 Chú ý",
-                description="❌ Vui lòng dùng lệnh này trong máy chủ!",
-                color=discord.Color.red()))
-        return
-    
     # Kiểm tra nếu bot không đủ quyền
     if role > interaction.guild.me.top_role:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed = discord.Embed(
                 title="🚫 Lỗi quyền",
                 description="Bot không có quyền thêm role này.",
-                color=discord.Color.red()
-            ), ephemeral=True)
-        return
+                color=discord.Color.red()), ephemeral=True)
 
     # Kiểm tra nếu người dùng đã có role
     if role in member.roles:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed = discord.Embed(
                 title="⚠️ Cảnh báo",
                 description=f"{member.mention} đã có role `{role.name}` từ trước.",
-                color=discord.Color.yellow()
-            ), ephemeral=True)
-        return
+                color=discord.Color.yellow()), ephemeral=True)
 
     try:
         await member.add_roles(role)
@@ -268,47 +315,36 @@ async def addrole(interaction: discord.Interaction, member: discord.Member, role
             embed = discord.Embed(
                 title="❌ Lỗi quyền",
                 description="Bot không đủ quyền để thêm role.",
-                color=discord.Color.red()
-            ), ephemeral=True)
+                color=discord.Color.red()), ephemeral=True)
     except Exception as e:
         await interaction.response.send_message(
             embed = discord.Embed(
                 title="⚠️ Lỗi xảy ra",
                 description=f"{e}",
-                color=discord.Color.orange()
-            ), ephemeral=True)
+                color=discord.Color.orange()), ephemeral=True)
        
 # REMOVE ROLE
 @bot.tree.command(name="removerole", description="Gỡ một role khỏi một người dùng")
-@discord.app_commands.describe(
+@app_commands.describe(
     member="Người bị gỡ role",
     role="Role cần gỡ"
 )
-@commands.has_permissions(manage_roles=True)
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(manage_roles=True)
 async def removerole(interaction: discord.Interaction, member: discord.Member, role: discord.Role):
-    if interaction.guild is None:
-        return await interaction.response.send_message(
-            embed=discord.Embed(
-                title="🚫 Chú ý",
-                description="❌ Vui lòng dùng lệnh này trong máy chủ!",
-                color=discord.Color.red()
-            ), ephemeral=True)
-
     if role not in member.roles:
         return await interaction.response.send_message(
             embed=discord.Embed(
                 title="⚠️ Cảnh báo",
                 description=f"{member.mention} không có role `{role.name}`.",
-                color=discord.Color.yellow()
-            ), ephemeral=True)
+                color=discord.Color.yellow()), ephemeral=True)
 
     if role >= interaction.guild.me.top_role:
         return await interaction.response.send_message(
             embed=discord.Embed(
                 title="🚫 Lỗi quyền",
                 description="Bot không có quyền gỡ role này.\nMã: M001",
-                color=discord.Color.red()
-            ), ephemeral=True)
+                color=discord.Color.red()), ephemeral=True)
 
     try:
         await member.remove_roles(role)
@@ -316,89 +352,209 @@ async def removerole(interaction: discord.Interaction, member: discord.Member, r
             embed=discord.Embed(
                 title="😭 Đã gỡ role",
                 description=f"Đã gỡ role `{role.name}` khỏi {member.mention}.\n\nNgười thực hiện: {interaction.user.mention}",
-                color=discord.Color.orange()
-            ))
+                color=discord.Color.orange()))
     except discord.Forbidden:
         await interaction.response.send_message(
             embed=discord.Embed(
                 title="❌ Lỗi quyền",
                 description="Bot không đủ quyền để gỡ role.\nMã: M001",
-                color=discord.Color.red()
-            ), ephemeral=True)
+                color=discord.Color.red()), ephemeral=True)
     except Exception as e:
         await interaction.response.send_message(
             embed=discord.Embed(
                 title="⚠️ Lỗi xảy ra",
                 description=str(e),
-                color=discord.Color.orange()
-            ), ephemeral=True)
+                color=discord.Color.orange()), ephemeral=True)
+
+# BAN
+@bot.tree.command(name="ban", description="Cấm người dùng khỏi máy chủ")
+@app_commands.describe(
+    member="Người bị cấm ",
+    reason="Lý do cấm người chơi"
+)
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(ban_members=True)
+async def ban(interaction: discord.Interaction, member: discord.Member, reason: str = "Không có"):
+    if interaction.user.top_role < member.top_role:
+        return await interaction.response.send_message(
+            embed=discord.Embed(
+                title="🚫 Lỗi quyền",
+                description="Bạn không thể cấm người có role cao hơn bạn.",
+                color=discord.Color.red()), ephemeral=True)
         
+    if interaction.guild.me.top_role < member.top_role:
+        return await interaction.response.send_message(
+            embed=discord.Embed(
+                title="🚫 Lỗi quyền",
+                description="Bot không có đủ quyền để cấm người dùng này.",
+                color=discord.Color.red()), ephemeral=True)
+    
+    try:
+        await interaction.guild.ban(member, reason=reason)
+        await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="✅ Thành công",
+                    description=f"{member.mention} đã bị cấm khỏi máy chủ.\nLý do: `{reason}`.\n\nNgười thực hiện: **{interaction.user.mention}**",
+                    color=discord.Color.red()))    
+        await member.send(
+            embed=discord.Embed(
+                title="🚫 ỐI DỒI ÔI",
+                description=f"Bạn đã bị cấm khỏi máy chủ **{interaction.guild.name}**.\nLý do: `{reason}`.\n\nNgười thực hiện: **{interaction.user.mention}**",
+                color=discord.Color.red()))
+    except discord.Forbidden:
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="🚫 Cảnh báo",
+                description=f"Không thể gửi tin nhắn cho <{member.mention}>\n #A0001",
+                color=discord.Color.red()), ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="🚫 Cảnh báo",
+                description=f"Lỗi:\n{e}\n\n#A0002",
+                color=discord.Color.red()), ephemeral=True)
+        
+# UNBAN
+@bot.tree.command(name="unban", description="Cấm người dùng khỏi máy chủ")
+@app_commands.describe(
+    user="ID của người đã bị cấm ",
+    reason="Lý do mở cấm người chơi"
+)
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(ban_members=True)
+@app_commands.autocomplete(user=banned_users_autocomplete)
+async def unban(interaction: discord.Interaction, user: str, reason: str = "Không có"):
+    try:
+        bans = interaction.guild.bans()    
+        async for ban in bans:
+            if str(ban.user.id) == user:
+                await interaction.guild.unban(ban.user, reason=reason)
+                await interaction.response.send_message(
+                    embed=discord.Embed(
+                        title="✅ Thành công",
+                        description=f"Đã mở cấm cho người dùng **{ban.user}**.\nLý do: `{reason}`.\n\nNgười thực hiện: {interaction.user.mention}",
+                        color=discord.Color.red()))
+                await ban.user.send(
+                    embed=discord.Embed(
+                        title="💖 DÌA DIA 💖",
+                        description=f"Bạn đã được mở cấm khỏi máy chủ **{interaction.guild.name}**.\nLý do: `{reason}`.\n\nNgười thực hiện: {interaction.user.mention}",
+                        color=discord.Color.red()))
+            else:
+                return await interaction.response.send_message(
+                    embed=discord.Embed(
+                        title="⚠️Cảnh báo⚠️",
+                        description="Người dùng này không bị cấm trong máy chủ",
+                        color=discord.Color.yellow()), ephemeral=True)
+        
+    except discord.Forbidden:
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="🚫 Cảnh báo",
+                description=f"Không thể gửi tin nhắn cho <{ban.user.mention}>\n\n #B001",
+                color=discord.Color.red()), ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="🚫 Cảnh báo",
+                description=f"Lỗi: {e}\n\n `#B002`",
+                color=discord.Color.red()), ephemeral=True)
+
+# KICK
+@bot.tree.command(name="kick", description="Đá người dùng khỏi giờ máy chủ")
+@app_commands.describe(
+    member="Người cần đuổi",
+    reason="Lý do"
+)
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(kick_members=True)
+async def kick(interaction: discord.Interaction, member: discord.Member, reason: str = "Không có"):
+    if interaction.user.top_role < member.top_role:
+        return await interaction.response.send_message(
+            embed=discord.Embed(
+                title="🚫 Lỗi quyền",
+                description="Bạn không thể đá người có role cao hơn bạn.",
+                color=discord.Color.red()), ephemeral=True)
+        
+    if interaction.guild.me.top_role < member.top_role:
+        return await interaction.response.send_message(
+            embed=discord.Embed(
+                title="🚫 Lỗi quyền",
+                description="Bot không có đủ quyền để đá người dùng này.",
+                color=discord.Color.red()), ephemeral=True)
+
+    try:
+        await interaction.guild.kick(member, reason=reason)
+        await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="✅ Thành công",
+                    description=f"{member.mention} đã bị đá khỏi máy chủ.\nLý do: `{reason}`.\n\nNgười thực hiện: **{interaction.user.mention}**",
+                    color=discord.Color.red()))  
+        await member.send(
+            embed=discord.Embed(
+                title="🚫 ỐI DỒI ÔI",
+                description=f"Bạn đã bị đá khỏi máy chủ **{interaction.guild.name}**.\nLý do: `{reason}`.\n\nNgười thực hiện: {interaction.user.mention}",
+                color=discord.Color.red()))
+    except discord.Forbidden:
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="🚫 Cảnh báo",
+                description=f"Không thể gửi tin nhắn cho <{member.mention}>\n\n #B001",
+                color=discord.Color.red()), ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="🚫 Cảnh báo",
+                description=f"Lỗi: {e}\n\n `#B002`",
+                color=discord.Color.red()), ephemeral=True)
+
 # MUTE
 muted_users_info = {}
 @bot.tree.command(name="mute", description="Cấm người dùng gửi tin nhắn")
-@discord.app_commands.describe(
+@app_commands.describe(
     member="Người cần mute",
     reason="Lý do",
     duration="Thời gian (10s, 5m, 1h, 2d) hoặc bỏ trống để mute vĩnh viễn"
 )
-@commands.has_permissions(manage_roles=True)
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(manage_roles=True)
 async def mute(interaction: discord.Interaction, member: discord.Member, reason: str = "Không có", duration: str = "vĩnh viễn"):
-    if interaction.guild is None:
-        await interaction.response.send_message(
-            embed=discord.Embed(
-                title="🚫 Chú ý",
-                description="❌ Vui lòng dùng lệnh này trong máy chủ!",
-                color=discord.Color.red()
-            ))
-        return
-
     muted_role = discord.utils.get(interaction.guild.roles, name="muted") or discord.utils.get(interaction.guild.roles, name="Muted")
     if not muted_role:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="🚫 Lỗi",
                 description="Không tìm thấy role 'muted'. Vui lòng tạo role này trước.",
-                color=discord.Color.red()
-            ), ephemeral=True)
-        return
+                color=discord.Color.red()), ephemeral=True)
 
     if interaction.user.top_role < member.top_role:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="🚫 Lỗi quyền",
                 description="Bạn không thể mute người có role cao hơn hoặc bằng bạn.",
-                color=discord.Color.red()
-            ), ephemeral=True)
-        return
+                color=discord.Color.red()), ephemeral=True)
 
     bot_member = interaction.guild.me
     if bot_member.top_role < member.top_role or bot_member.top_role < muted_role:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="🚫 Lỗi quyền",
                 description="Bot không có đủ quyền để mute người dùng này.",
-                color=discord.Color.red()
-            ), ephemeral=True)
-        return
+                color=discord.Color.red()), ephemeral=True)
 
     if muted_role in member.roles:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="⚠️ Cảnh báo",
                 description=f"{member.mention} đã bị mute rồi.",
-                color=discord.Color.orange()
-            ), ephemeral=True)
-        return
+                color=discord.Color.orange()), ephemeral=True)
 
     seconds = parse_time(duration)
     if seconds == "invalid":
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="🚫 Lỗi định dạng thời gian",
                 description="Định dạng thời gian không hợp lệ. Vui lòng nhập: 10s, 5m, 1h, 2d hoặc bỏ trống để mute vĩnh viễn.",
-                color=discord.Color.red()
-            ), ephemeral=True)
-        return
+                color=discord.Color.red()), ephemeral=True)
 
     await member.add_roles(muted_role, reason=reason)
 
@@ -430,70 +586,52 @@ async def mute(interaction: discord.Interaction, member: discord.Member, reason:
             embed=discord.Embed(
                 title="🔇 Đã mute vĩnh viễn",
                 description=f"{member.mention} đã bị mute vĩnh viễn.\n✏️ Lý do: `{reason}`\n\nNgười thực hiện: {interaction.user.mention}",
-                color=discord.Color.orange()
-            ))
+                color=discord.Color.orange()))
     else:
         await interaction.response.send_message(
             embed=discord.Embed(
                 title="🔇 Đã mute thành công",
                 description=f"{member.mention} đã bị mute trong `{duration}`.\n✏️ Lý do: `{reason}`\n\nNgười thực hiện: {interaction.user.mention}",
-                color=discord.Color.orange()
-            ))
-            
+                color=discord.Color.orange()))
+
 # UNMUTE
 @bot.tree.command(name="unmute", description="Cho phép người dùng gửi tin nhắn")
-@discord.app_commands.describe(
+@app_commands.describe(
     member="Người bị mute",
     reason="Lý do"
 )
-@commands.has_permissions(manage_roles=True)
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(manage_roles=True)
 async def unmute(interaction: discord.Interaction, member: discord.Member, reason: str = "Không có lý do"):
-    if interaction.guild is None:
-        await interaction.response.send_message(
-            embed=discord.Embed(
-                title="🚫 Chú ý",
-                description="❌ Vui lòng dùng lệnh này trong máy chủ!",
-                color=discord.Color.red()
-            ))
-        return
-
     muted_role = discord.utils.get(interaction.guild.roles, name="muted") or discord.utils.get(interaction.guild.roles, name="Muted")
     if not muted_role:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="🚫 Lỗi",
                 description="Không tìm thấy role 'muted'. Vui lòng tạo role này trước.",
-                color=discord.Color.red()
-            ), ephemeral=True)
-        return
+                color=discord.Color.red()), ephemeral=True)
 
     if interaction.user.top_role < member.top_role:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="⚠️ Cảnh báo",
                 description="Bạn không thể unmute người có role cao hơn hoặc bằng bạn.",
-                color=discord.Color.orange()
-            ), ephemeral=True)
-        return
+                color=discord.Color.orange()), ephemeral=True)
 
     bot_member = interaction.guild.me
     if bot_member.top_role < member.top_role or bot_member.top_role < muted_role:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="⚠️ Cảnh báo",
                 description="Bot không có đủ quyền để unmute người dùng này.",
-                color=discord.Color.yellow()
-            ), ephemeral=True)
-        return
+                color=discord.Color.yellow()), ephemeral=True)
 
     if muted_role not in member.roles:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="⚠️ Cảnh báo",
                 description=f"{member.mention} không bị mute.",
-                color=discord.Color.yellow()
-            ), ephemeral=True)
-        return
+                color=discord.Color.yellow()), ephemeral=True)
 
     try:
         await member.remove_roles(muted_role, reason=reason)
@@ -504,57 +642,49 @@ async def unmute(interaction: discord.Interaction, member: discord.Member, reaso
             embed=discord.Embed(
                 title="🔊 Đã unmute",
                 description=f"{member.mention} đã được unmute.\n✏️ Lý do: `{reason}`\n\nNgười thực hiện: {interaction.user.mention}",
-                color=discord.Color.green()
-            ))
+                color=discord.Color.green()))
     except discord.Forbidden:
         await interaction.response.send_message(
             embed=discord.Embed(
                 title="🚫 Lỗi",
                 description="Bot không đủ quyền để unmute người này.",
-                color=discord.Color.red()
-            ), ephemeral=True)
+                color=discord.Color.red()), ephemeral=True)
         
 # LISTMUTE
 @bot.tree.command(name="listmute", description="Hiển thị danh sách các thành viên đang bị mute")
-@commands.has_permissions(manage_roles=True)
+@app_commands.guild_only()
 async def listmute(interaction: discord.Interaction):
-    if interaction.guild is None:
-        await interaction.response.send_message(
+    # Kiểm tra quyền của người dùng
+    if not interaction.user.guild_permissions.manage_roles:
+        return await interaction.response.send_message(
             embed=discord.Embed(
-                title="🚫 Chú ý",
-                description="❌ Vui lòng dùng lệnh này trong máy chủ!",
-                color=discord.Color.red()
-            ))
-        return
+                title="🚫 Không đủ quyền",
+                description="Bạn cần có quyền **Manage Roles** để dùng lệnh này.",
+                color=discord.Color.red()), ephemeral=True)
 
     muted_users_info = load_muted_data(interaction.guild)
     muted_role = discord.utils.get(interaction.guild.roles, name="muted") or discord.utils.get(interaction.guild.roles, name="Muted")
 
     if not muted_role:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="⚠️ Lỗi",
                 description="Role 'muted' không tồn tại trong máy chủ.",
-                color=discord.Color.red()
-            ), ephemeral=True)
-        return
+                color=discord.Color.red()), ephemeral=True)
 
     muted_members = [member for member in interaction.guild.members if muted_role in member.roles]
 
     if not muted_members:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed=discord.Embed(
                 title="✅ Không có ai bị mute",
                 description="Hiện tại không có thành viên nào đang bị mute.",
-                color=discord.Color.green()
-            ))
-        return
+                color=discord.Color.green()), ephemeral=True)
 
     embed = discord.Embed(
         title="🔇 Danh sách thành viên đang bị mute",
         description=f"**Tổng cộng: {len(load_muted_data(interaction.guild))} người bị mute**",
-        color=discord.Color.blue()
-    )
+        color=discord.Color.blue())
 
     for member in muted_members:
         info = muted_users_info.get(member.id, {})
@@ -573,55 +703,42 @@ async def listmute(interaction: discord.Interaction):
                 f"⏳ Thời gian mute: `{duration}`\n"
                 f"⏱ Thời diểm mute: `{start_time}`\n"
                 f"🕒 Kết thúc mute: `{end_time}`\n"
-                f"👮‍♂️ Người mute: {mention}"
-            ),inline=False)
+                f"👮‍♂️ Người mute: {mention}"),inline=False)
         embed.add_field(name="", value="", inline=False)
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
     
 # SAY
 @bot.tree.command(name="say", description="Nhờ bot nói hộ bạn gì đó")
-@discord.app_commands.describe(
+@app_commands.describe(
     message="Điều mà bạn muốn nói"
 )
-@commands.has_permissions(manage_messages=True)
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(manage_messages=True)
 async def say(interaction: discord.Interaction, message: str):
-    # Kiểm tra lệnh có được triển khai trong máy chủ hay không
-    if interaction.guild is None:
-        await interaction.response.send_message(
-            embed = discord.Embed(
-                title="🚫 Chú ý",
-                description="❌ Vui lòng dùng lệnh này trong máy chủ!.",
-                color=discord.Color.red()))
-        return
-
     await interaction.response.send_message("✅ Đã gửi!", ephemeral=True)
     await interaction.channel.send(f"```{message}```")
     
 # WARN
 @bot.tree.command(name="warn", description="Cảnh cáo thành viên")
-@discord.app_commands.describe(member="Người cần cảnh cáo", reason="Lý do cảnh cáo")
-@commands.has_permissions(manage_messages=True)
-@commands.has_permissions(manage_roles=True)
+@app_commands.describe(member="Người cần cảnh cáo", reason="Lý do cảnh cáo")
+@app_commands.guild_only()
+@app_commands.checks.has_permissions(manage_roles=True, manage_messages=True)
 async def warn(interaction: discord.Interaction, member: discord.Member, reason: str = "Không có lý do"):
     # Kiểm tra vai trò
     if interaction.user.top_role <= member.top_role:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed = discord.Embed(
                 title="🚫 Chú ý",
                 description="Bạn không thể cảnh cáo người có vai trò cao hơn hoặc bằng bạn.",
-                color=discord.Color.yellow()
-            ), ephemeral=True)
-        return
+                color=discord.Color.yellow()), ephemeral=True)
 
     if member.bot:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             embed = discord.Embed(
                 title="🚫 Chú ý",
                 description="Không thể cảnh cáo bot.",
-                color=discord.Color.yellow()
-            ), ephemeral=True)
-        return
+                color=discord.Color.yellow()), ephemeral=True)
 
     guild = interaction.guild
     now = datetime.datetime.now()
@@ -693,8 +810,7 @@ async def warn(interaction: discord.Interaction, member: discord.Member, reason:
                 description=(
                     f"✏️ Lý do: `{reason}`\n🕒 Thời gian: `{now_str}`"
                     "\nChú ý:\n1.Nếu bạn bị warn 3 lần, bạn sẽ bị mute 1 ngày\n2. Nếu bạn bị warn 6 lần, bạn sẽ bị mute 3 ngày\n3. Nếu bạn bị warn hơn 6 lần, bạn sẽ bị mute 7 ngày"),
-                color=discord.Color.yellow()
-            ))
+                color=discord.Color.yellow()))
     except discord.Forbidden:
         pass  # Người dùng tắt DM
 
@@ -746,7 +862,18 @@ async def warn(interaction: discord.Interaction, member: discord.Member, reason:
                         color=discord.Color.orange()))
             except discord.Forbidden:
                 pass
-
+            
+#### BẮT LỖI SLASH COMMAND ####
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.MissingPermissions):
+        perms = ', '.join(error.missing_permissions)
+        return await interaction.response.send_message(
+            embed=discord.Embed(
+                title="❌❌❌ Cảnh báo ❌❌❌",
+                description=f"❌ Bạn thiếu quyền: **`{perms}`** để dùng lệnh này. ❌",
+                color=discord.Color.red()), ephemeral=True)
+        
 #### LOGIC ####
 @bot.event
 async def on_message(message):
@@ -782,18 +909,33 @@ async def on_message(message):
     #### Ngăn bot tự trả lời ####
     if message.author.bot:
         return
+    
+    #### Chỉ hoạt động trong máy chủ
+    if message.guild is None:
+        return
 
-    #### Gửi tin nhắn thì xóa AFK ####
-    if message.author.id in afk_users:
-        del afk_users[message.author.id]
-        await message.channel.send(f"💀 VCL {message.author.mention} kìa, trạng thái AFK của bạn đã được gỡ.")
-
+    afk_users = load_afk_data(message.guild)
     #### Nếu tag người đang AFK ####
     for user in message.mentions:
         if user.id in afk_users:
+            await message.delete()
             reason = afk_users[user.id]["reason"]
-            await message.channel.send(f"⚠️ {user.name} hiện đang AFK: **{reason}**")
+            await message.channel.send(
+                embed = discord.Embed(
+                    title="⚠️ Người dùng đang AFK",
+                    description=f"Người bạn vừa đề cập hiện đang AFK.\nLý do: **{reason}**",
+                    color=discord.Color.yellow()), ephemeral=True)
     
+    #### Gửi tin nhắn thì xóa AFK ####
+    if message.author.id in afk_users:
+        await message.channel.send(
+            embed = discord.Embed(
+                title="💀💀💀 DUMA ANH EM CHÚ Ý 💀💀💀",
+                description=f"{message.author.mention} đã online trở lại",
+                color=discord.Color.blue())
+        )
+        afk_users.pop(message.author.id, None)
+        save_afk_data(message.guild, afk_users)
     await bot.process_commands(message)  # Nếu bạn dùng both commands và slash
     
     #### Trả lời người dùng khi được tag ####
@@ -984,55 +1126,77 @@ async def auto_setup_role(guild: discord.Guild):
     muted_role = discord.utils.get(guild.roles, name="muted") or discord.utils.get(guild.roles, name="Muted")
     default_role = guild.default_role
 
-    # Tạo role nếu chưa có
+    # Tạo role muted nếu chưa có
     if not muted_role:
         try:
             muted_role = await guild.create_role(name="muted", reason="Tạo role để mute người dùng")
         except discord.Forbidden:
+            print(f"{discord.Guild} đã có vai trò 'muted', đang bỏ qua")
             return
 
     muted_role_channel_changed = 0
     default_role_channel_changed = 0
 
+    # Các quyền cần thiết cho role muted
+    muted_permissions = {
+        "send_messages": False,
+        "send_messages_in_threads": False,
+        "create_public_threads": False,
+        "create_private_threads": False,
+        "embed_links": False,
+        "attach_files": False,
+        "add_reactions": False,
+        "use_external_emojis": False,
+        "use_external_stickers": False,
+        "send_tts_messages": False,
+        "send_voice_messages": False,
+        "use_application_commands": False,
+    }
+
+    # Các quyền cần hạn chế cho role mặc định
+    default_permissions = {
+        "create_instant_invite": False,
+        "send_messages_in_threads": False,
+        "create_public_threads": False,
+        "create_private_threads": False,
+        "mention_everyone": False,
+    }
+
+    # Cập nhật quyền cho muted role nếu cần
     for channel in guild.channels:
         try:
-            overwrite = channel.overwrites_for(muted_role)
-            overwrite.send_messages = False
-            overwrite.send_messages_in_threads = False
-            overwrite.create_public_threads = False
-            overwrite.create_private_threads = False
-            overwrite.embed_links = False
-            overwrite.attach_files = False
-            overwrite.add_reactions = False
-            overwrite.use_external_emojis = False
-            overwrite.use_external_stickers = False
-            overwrite.send_tts_messages = False
-            overwrite.send_voice_messages = False
-            overwrite.use_application_commands = False
+            current_overwrite = channel.overwrites_for(muted_role)
+            needs_update = any(getattr(current_overwrite, perm, None) != value for perm, value in muted_permissions.items())
 
-            await channel.set_permissions(muted_role, overwrite=overwrite)
-            muted_role_channel_changed += 1
+            if needs_update:
+                for perm, value in muted_permissions.items():
+                    setattr(current_overwrite, perm, value)
+                await channel.set_permissions(muted_role, overwrite=current_overwrite)
+                muted_role_channel_changed += 1
+
         except Exception as e:
             print(f"⚠️ Lỗi ở kênh '{channel.name}' ({guild.name}): {e}")
 
-    print(f"🔧 Đã thiết lập quyền cho role 'muted' ở {muted_role_channel_changed} kênh trong server '{guild.name}'.")
-    
+    # Cập nhật quyền cho default role nếu cần
     for channel in guild.channels:
-        try: 
-            overwrite = channel.overwrites_for(default_role)
-            overwrite.create_instant_invite = False  
-            overwrite.send_messages_in_threads = False  
-            overwrite.create_public_threads = False 
-            overwrite.create_private_threads = False  
-            overwrite.mention_everyone = False
-                
-            await channel.set_permissions(default_role, overwrite=overwrite)
-            default_role_channel_changed += 1
+        try:
+            current_overwrite = channel.overwrites_for(default_role)
+            needs_update = any(getattr(current_overwrite, perm, None) != value for perm, value in default_permissions.items())
+
+            if needs_update:
+                for perm, value in default_permissions.items():
+                    setattr(current_overwrite, perm, value)
+                await channel.set_permissions(default_role, overwrite=current_overwrite)
+                default_role_channel_changed += 1
+
         except Exception as e:
             print(f"⚠️ Lỗi ở kênh '{channel.name}' ({guild.name}): {e}")
-        
-    print(f"🔧 Đã thiết lập quyền cho role mặc định ở {muted_role_channel_changed} kênh trong server '{guild.name}'.\n")
 
+    if muted_role_channel_changed > 0 and default_role_channel_changed > 0:
+        print(f"🔧 Đã thiết lập quyền cho role '{muted_role}' ở <{muted_role_channel_changed}> kênh trong server '{guild.name}'.")
+        print(f"🔧 Đã thiết lập quyền cho role mặc định ('{default_role}') ở <{default_role_channel_changed}> kênh trong server '{guild.name}'.\n")
+    else:
+        pass
 
 #### TERMINAL ####
 def terminal_interface():
@@ -1056,14 +1220,28 @@ def terminal_interface():
             guild = guild_map.get(server_input)
             if guild:
                 print(f"\n📌 Đã chọn server: {guild.name}")
-                text_channels = list(guild.text_channels)
+
+                # Lấy danh sách kênh văn bản và sắp xếp theo category
+                text_channels = sorted(
+                    [ch for ch in guild.text_channels],
+                    key=lambda c: (c.category.name if c.category else "", c.position)
+                )
+
                 channel_map = {}
+                current_category = None
+
                 for idx, ch in enumerate(text_channels, start=1):
+                    cat_name = ch.category.name if ch.category else "❌ ################"
+                    if current_category != cat_name:
+                        print(f"\n📂 {cat_name}")
+                        current_category = cat_name
+
                     print(f"  [{idx}] #{ch.name} (ID: {ch.id})")
                     channel_map[str(idx)] = ch
                     channel_map[str(ch.id)] = ch
+
                 while True:
-                    channel_input = input("\n📺 Chọn kênh bằng số hoặc ID: ").strip()
+                    channel_input = input("\n🔧 Chọn kênh bằng số hoặc ID: ").strip()
                     selected = channel_map.get(channel_input)
                     if selected:
                         return selected
@@ -1148,12 +1326,12 @@ def terminal_interface():
             async def clear_all():
                 deleted = 0
                 while True:
-                    messages = [msg async for msg in selected_channel.history(limit=100)]
+                    messages = [msg async for msg in selected_channel.history(limit=500)]
                     if not messages:
                         break
-                    await selected_channel.purge(limit=100)
+                    await selected_channel.purge(limit=500)
                     deleted += len(messages)
-                    await asyncio.sleep(.2)
+                    await asyncio.sleep(.8)
                 print(f"\n✅ Đã xoá tổng cộng {deleted} tin nhắn.\n")
                 await selected_channel.send(f"\n```✅ Đã xoá tổng cộng {deleted} tin nhắn.```\n", delete_after=3)
             future = asyncio.run_coroutine_threadsafe(clear_all(), bot.loop)
@@ -1165,7 +1343,7 @@ def terminal_interface():
                 user_id = int(parts[1])
                 content = parts[2]
                 async def send_dm():
-                    user = await bot.get_user(user_id)
+                    user = bot.get_user(user_id)
                     await user.send(f"```{content}```")
                     print(f"✅ Đã gửi tin nhắn đến {user.name}#{user.id}")
                 future = asyncio.run_coroutine_threadsafe(send_dm(), bot.loop)
@@ -1226,6 +1404,28 @@ def terminal_interface():
                     print(f" - {sid}#{name}")
             else:
                 print("⚠️ Không có server nào đang được log.")
+        
+        elif cmd.startswith("leaveserver "):
+            try:
+                parts = cmd.split(" ", 1)
+                guild_id = int(parts[1])
+                guild = discord.utils.get(bot.guilds, id=guild_id)
+
+                if guild:
+                    print(f"🔁 Đang thoát máy chủ: {guild.name} ({guild.id})")
+
+                    async def leave_guild(target_guild):
+                        await target_guild.leave()
+
+                    future = asyncio.run_coroutine_threadsafe(leave_guild(guild), bot.loop)
+                    future.result()
+                    print("✅ Đã thoát khỏi máy chủ.")
+                else:
+                    print("⚠️ Bot không ở trong máy chủ này.")
+            except ValueError:
+                print("❌ ID máy chủ không hợp lệ.")
+            except Exception as e:
+                print(f"❌ Lỗi khi thoát máy chủ: {e}")
 
         elif cmd == "channel":
             selected_channel = select_channel()
@@ -1251,14 +1451,15 @@ async def on_ready():
         await auto_setup_role(guild)
     bot.loop.create_task(precise_loop())
     await bot.wait_until_ready()
-    synced = await bot.tree.sync(guild=None)
-    print(f"✅Đã đồng bộ {len(synced)} lệnh slash command.\n✅ Bot đã đăng nhập với tài khoản: {bot.user} ({bot.user.id})") 
+    for cmd in await bot.tree.sync(guild=None):
+        print(f"✅Đã đồng bộ lệnh: {cmd.name}")
+    print(f"\n✅ Bot đã đăng nhập với tài khoản: {bot.user} ({bot.user.id})") 
     threading.Thread(target=terminal_interface, daemon=True).start()
     
 @bot.event
 async def on_guild_join(guild: discord.Guild):
     print(f"➕ Bot đã được thêm vào server: {guild.name}")
-    await auto_setup_muted_role(guild)
+    await auto_setup_role(guild)
     
 # -------------------------------------------
 # Project: Con của Bắp#9505
@@ -1266,9 +1467,9 @@ async def on_guild_join(guild: discord.Guild):
 # Author: Phạm Lợi
 # Discord: pap_corn
 # Created: 16/4/2025
-# Last Updated: 11/6/2025
+# Last Updated: 5/7/2025
 #
-# Version: 1.1
+# Version: 1.1.5
 #
 # Copyright (c) 2025 pap_corn
 # All rights reserved.
