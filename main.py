@@ -6,6 +6,7 @@ import os
 import discord, asyncio, json, datetime, threading, re, random, aiohttp, time, stat
 from discord import app_commands
 from discord.ext import commands
+from discord.ui import View, Select
 from dotenv import load_dotenv
 
 os.system('cls')  # on windows
@@ -22,22 +23,24 @@ log_user_ids = set()
 responsesJsonPath = "json/responses.json"
 
 #### Available commands ####
-CommandsForTerminal = """📖 Danh sách lệnh:
-    help                     - Gửi lại danh sách lệnh
-    say <nội_dung>           - Bot gửi tin nhắn thay bạn.
-    clear <số_lượng>         - Xoá số lượng tin nhắn nhất định (1-100).
-    clear_all                - Xoá toàn bộ tin nhắn trong kênh.
-    channel                  - Đổi kênh gửi lệnh.
-    servers                  - Hiển thị danh sách server và kênh.
-    dm <user_id> <nội_dung>  - Gửi tin nhắn riêng (DM).
-    loguser <user.id>        - Bắt đầu log người dùng.
-    unloguser <user.id>      - Dừng log người dùng.
-    listloguser              - Liệt kê người đang được log.
-    logserver <server_id>    - Bắt đầu log toàn server.
-    unlogserver <server_id>  - Dừng log server.
-    listlogserver            - Liệt kê các server đang log.
-    leaveserver <server_id>  - Thoát bot khỏi server
-    exit                     - Tắt bot.
+CommandsForTerminal = """
+    help - Gửi lại danh sách lệnh
+    say <nội_dung> - Bot gửi tin nhắn thay bạn.
+    clear <số_lượng> - Xoá số lượng tin nhắn nhất định (1-100).
+    clear_all - Xoá toàn bộ tin nhắn trong kênh.
+    createinvite_once <guild_id> - Tạo link mời (1 lần sử dụng)
+    channel - Đổi kênh gửi lệnh.
+    servers - Hiển thị danh sách server và kênh.
+    dm <user_id> <nội_dung> - Gửi tin nhắn riêng (DM).
+    loguser <user.id> - Bắt đầu log người dùng.
+    unloguser <user.id> - Dừng log người dùng.
+    listloguser - Liệt kê người đang được log.
+    logserver <server_id> - Bắt đầu log toàn server.
+    unlogserver <server_id> - Dừng log server.
+    listlogserver - Liệt kê các server đang log.
+    listinvitation <serverid> - Hiện thị toàn bộ mã mời của máy chủ
+    leaveserver <server_id> - Thoát bot khỏi server
+    exit - Tắt bot.
 """
 
 #### Basic function ####  
@@ -168,6 +171,26 @@ async def save_attachments(message, folder):
             voice_filename = f"{full_format_time().replace(':', '-')}_{message.id}{ext}"
             voice_full_path = os.path.join(voice_path, voice_filename)
 
+async def slash_command_logging(interaction: discord.Interaction, command_name: str):
+    if not interaction.guild:
+        return  # Bỏ qua nếu không phải trong guild
+
+    # Lấy thông tin
+    guild = interaction.guild
+    user = interaction.user
+    channel = interaction.channel
+
+    # Tạo đường dẫn
+    folder_path = f"command_log/{safe_filename(guild.name)}_{guild.id}"
+    ensure_dir(folder_path)
+    file_path = os.path.join(folder_path, "history.txt")
+
+    # Ghi log
+    log_line = f"[{full_format_time()}] {user} dùng /{command_name} tại #{channel}\n"
+
+    with open(file_path, "a", encoding="utf-8") as f:
+        f.write(log_line)
+        
 #### Processor for morderator ####
 def parse_time(duration_str: str):
     if not duration_str or duration_str.lower() == "vĩnh viễn":
@@ -200,7 +223,6 @@ async def role_autocomplete(interaction: discord.Interaction, current: str):
 
 async def banned_users_autocomplete(interaction: discord.Interaction, current: str):
     results: list[app_commands.Choice[str]] = []
-
     try:
         bans = interaction.guild.bans()  # KHÔNG await
         async for ban in bans:
@@ -862,11 +884,18 @@ async def warn(interaction: discord.Interaction, member: discord.Member, reason:
                         color=discord.Color.orange()))
             except discord.Forbidden:
                 pass
-            
+    
 #### BẮT LỖI SLASH COMMAND ####
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-    if isinstance(error, app_commands.MissingPermissions):
+    if isinstance(error, app_commands.CommandNotFound):
+        return await interaction.response.send_message(
+            embed=discord.Embed(
+                title="❌❌❌ Cảnh báo ❌❌❌",
+                description=f"❌ Lệnh **`{error.name}`** không tồn tại. ❌",
+                color=discord.Color.red()), ephemeral=True)
+        
+    elif isinstance(error, app_commands.MissingPermissions):
         perms = ', '.join(error.missing_permissions)
         return await interaction.response.send_message(
             embed=discord.Embed(
@@ -989,6 +1018,14 @@ async def on_message(message):
                 else:
                     response = f"{random.choice(contents)}"
                 await message.reply(f"{message.author.mention} ```{response}```")
+                
+# Ghi log khi dùng slash command
+@bot.event
+async def on_interaction(interaction: discord.Interaction):
+    if interaction.type == discord.InteractionType.application_command:
+        command_name = interaction.data.get("name", "unknown")
+        await slash_command_logging(interaction, command_name)
+    
 
 # CẬP NHẬT MUTE KHI THÊM ROLE THỦ CÔNG
 @bot.event
@@ -1123,6 +1160,12 @@ async def precise_loop():
 
 # CÀI ĐẶT CẤU HÌNH MUTED
 async def auto_setup_role(guild: discord.Guild):
+    bot_perms = guild.me.guild_permissions
+    if not bot_perms.view_channel or not bot_perms.manage_channels or not bot_perms.manage_roles:
+        print(f"\n❌ Bot thiếu quyền ở server: {guild.name}\n")
+        return
+
+
     muted_role = discord.utils.get(guild.roles, name="muted") or discord.utils.get(guild.roles, name="Muted")
     default_role = guild.default_role
 
@@ -1250,14 +1293,87 @@ def terminal_interface():
             else:
                 print("❌ Không tìm thấy server. Nhập lại.")
 
-    print(CommandsForTerminal)
+    def printingAllCommandsAsTable():
+        commands = []
+        lines = CommandsForTerminal.strip().split("\n")
+        for line in lines:
+            if "-" in line:
+                command, desc = line.split("-", 1)
+                commands.append([command.strip(), desc.strip()])
+
+        # Tính chiều rộng cột lớn nhất
+        cmd_col_width = max(len(cmd[0]) for cmd in commands)
+        desc_col_width = max(len(cmd[1]) for cmd in commands)
+
+        # Hàm in dòng phân cách
+        def print_separator():
+            print(f"+{'-' * (cmd_col_width + 2)}+{'-' * (desc_col_width + 2)}+")
+
+        # In bảng
+        print_separator()
+        print(f"| {'Lệnh'.ljust(cmd_col_width)} | {'Mô tả'.ljust(desc_col_width)} |")
+        print_separator()
+
+        for cmd, desc in commands:
+            print(f"| {cmd.ljust(cmd_col_width)} | {desc.ljust(desc_col_width)} |")
+        print_separator()
+        
+    printingAllCommandsAsTable()
     selected_channel = select_channel()
 
     while True:
         cmd = input("\nNhập lệnh: ").strip()
 
         if cmd.startswith("help"):
-            print(CommandsForTerminal)
+            printingAllCommandsAsTable()
+            
+        elif cmd.startswith("createinvite_once "):
+            try:
+                parts = cmd.split(" ", 1)
+                guild_id = int(parts[1])
+
+                guild = discord.utils.get(bot.guilds, id=guild_id)
+                if not guild:
+                    print("⚠️ Bot không ở trong máy chủ này.")
+                    return
+
+                # Tìm kênh văn bản đầu tiên mà bot có thể tạo invite
+                text_channel = None
+                for channel in guild.text_channels:
+                    if channel.permissions_for(guild.me).create_instant_invite:
+                        text_channel = channel
+                        break
+
+                if not text_channel:
+                    print("❌ Không tìm thấy kênh nào mà bot có thể tạo invite.")
+                    return
+
+                async def create_one_time_invite():
+                    try:
+                        invite = await text_channel.create_invite(max_uses=1, unique=True)
+                        print(f"🔗 Invite (1 lần dùng): {invite.url} (kênh: {text_channel.name})")
+
+                        # Theo dõi việc sử dụng invite
+                        while True:
+                            current = await guild.invites()
+                            current_invite = discord.utils.get(current, code=invite.code)
+                            if current_invite is None or current_invite.uses >= 1:
+                                print("✅ Invite đã được sử dụng.")
+                                break
+                            await asyncio.sleep(5)
+
+                    except discord.Forbidden:
+                        print("❌ Bot không có quyền tạo hoặc xem invite.")
+                    except Exception as e:
+                        print(f"❌ Lỗi: {e}")
+
+                future = asyncio.run_coroutine_threadsafe(create_one_time_invite(), bot.loop)
+                future.result()
+
+            except ValueError:
+                print("❌ ID không hợp lệ.")
+            except Exception as e:
+                print(f"❌ Lỗi khi tạo invite: {e}")
 
         elif cmd.startswith("say "):
             msg = cmd[4:]
@@ -1404,6 +1520,41 @@ def terminal_interface():
                     print(f" - {sid}#{name}")
             else:
                 print("⚠️ Không có server nào đang được log.")
+                
+        elif cmd.startswith("listinvitation "):
+            try:
+                parts = cmd.split(" ", 1)
+                guild_id = int(parts[1])
+                guild = discord.utils.get(bot.guilds, id=guild_id)
+
+                if guild:
+                    print(f"📥 Đang lấy danh sách invite cho: {guild.name} ({guild.id})")
+
+                    async def get_invites(target_guild):
+                        try:
+                            invites = await target_guild.invites()
+                            return invites
+                        except discord.Forbidden:
+                            print("❌ Bot không có quyền xem danh sách invite.")
+                            return None
+
+                    future = asyncio.run_coroutine_threadsafe(get_invites(guild), bot.loop)
+                    invites = future.result()
+
+                    if invites is None:
+                        pass  # lỗi quyền
+                    elif not invites:
+                        print("ℹ️ Guild không có invite nào.")
+                    else:
+                        print(f"📋 Có {len(invites)} invite(s):")
+                        for i, invite in enumerate(invites, start=1):
+                            print(f"{i}. {invite.url} | Tạo bởi: {invite.inviter} | Sử dụng: {invite.uses}")
+                else:
+                    print("⚠️ Bot không ở trong máy chủ này.")
+            except ValueError:
+                print("❌ ID máy chủ không hợp lệ.")
+            except Exception as e:
+                print(f"❌ Lỗi khi lấy invite: {e}")
         
         elif cmd.startswith("leaveserver "):
             try:
@@ -1447,12 +1598,18 @@ def terminal_interface():
 #### ARE YOU REAĐYYYYYYYYYYYYY????? ####
 @bot.event
 async def on_ready():
-    for guild in bot.guilds:
-        await auto_setup_role(guild)
     bot.loop.create_task(precise_loop())
     await bot.wait_until_ready()
-    for cmd in await bot.tree.sync(guild=None):
-        print(f"✅Đã đồng bộ lệnh: {cmd.name}")
+        
+    for synced_global in await bot.tree.sync():
+        print(f"✅ Đã đồng bộ lệnh {synced_global.name}")
+        
+    for synced_private in await bot.tree.sync(guild=discord.Object(id=dcmmmmmmmmmmmmmmmm)):
+        print(f"✅ Đã đồng bộ ở {synced_private.guild.name} với {synced_private.name} lệnh")
+        
+    for guild in bot.guilds:
+        await auto_setup_role(guild)
+        
     print(f"\n✅ Bot đã đăng nhập với tài khoản: {bot.user} ({bot.user.id})") 
     threading.Thread(target=terminal_interface, daemon=True).start()
     
@@ -1467,9 +1624,9 @@ async def on_guild_join(guild: discord.Guild):
 # Author: Phạm Lợi
 # Discord: pap_corn
 # Created: 16/4/2025
-# Last Updated: 5/7/2025
+# Last Updated: 21/7/2025
 #
-# Version: 1.1.5
+# Version: 1.1.6
 #
 # Copyright (c) 2025 pap_corn
 # All rights reserved.
