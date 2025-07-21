@@ -1604,9 +1604,6 @@ async def on_ready():
     for synced_global in await bot.tree.sync():
         print(f"✅ Đã đồng bộ lệnh {synced_global.name}")
         
-    for synced_private in await bot.tree.sync(guild=discord.Object(id=dcmmmmmmmmmmmmmmmm)):
-        print(f"✅ Đã đồng bộ ở {synced_private.guild.name} với {synced_private.name} lệnh")
-        
     for guild in bot.guilds:
         await auto_setup_role(guild)
         
