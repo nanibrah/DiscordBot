@@ -1,3 +1,0 @@
-discord.py>=2.5.2
-aiohttp>=3.11.12
-dotenv>=0.9.9

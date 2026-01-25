@@ -1,0 +1,161 @@
+{
+    "mute": {
+        "description": {
+            "en-US": "Mute a member",
+            "vi": "Cấm người dùng nói chuyện"
+        },
+        "options": {
+            "member": {
+                "en-US": "Member to mute",
+                "vi": "Người cần mute"
+            },
+            "reason": {
+                "en-US": "Reason",
+                "vi": "Lý do"
+            },
+            "duration": {
+                "en-US": "Duration (10s, 5m, 1h, 2d) or leave empty for permanent mute",
+                "vi": "Thời gian (10s, 5m, 1h, 2d) hoặc bỏ trống để mute vĩnh viễn"
+            }
+        }
+    },
+
+    "unmute": {
+        "description": {
+            "en-US": "Unmute a member",
+            "vi": "Cấp quyền công dân cho người dùng"
+        },
+        "options": {
+            "member": {
+                "en-US": "Muted member",
+                "vi": "Người bị mute"
+            },
+            "reason": {
+                "en-US": "Reason",
+                "vi": "Lý do"
+            }
+        }
+    },
+
+    "listmute": {
+        "description": {
+            "en-US": "Display a list of members who are currently muted",
+            "vi": "Hiển thị danh sách các thành viên đang bị mute"
+        }
+    },
+
+    "kick": {
+        "description": {
+            "en-US": "Kick user from your server",
+            "vi": "Đá người dùng khỏi giờ máy chủ"
+        },
+        "option": {
+            "member": {
+                "en-US": "Member to kick",
+                "vi": "Người cần đuổi"
+            },
+            "reason": {
+                "en-US": "Reason",
+                "vi":"Lý do"
+            }            
+        }
+    },
+
+    "ban": {
+        "description": {
+            "en-US": "Ban user from the server",
+            "vi": "Cấm người dùng khỏi máy chủ"
+        },
+        "option": {
+            "member": {
+                "en-US": "Member to ban",
+                "vi": "Đuổi người dùng khỏi máy chủ"
+            },
+            "reason": {
+                "en-US": "Reason",
+                "vi":"Lý do"
+            }
+        }
+    },
+
+    "unban": {
+        "description": {
+            "en-US": "Unban an user",
+            "vi": "Hủy cấm 1 người dùng"
+        },
+        "option": {
+            "user": {
+                "en-US": "ID's banned user",
+                "vi": "ID của người đã bị cấm"
+            },
+            "reason": {
+                "en-US": "Reason",
+                "vi": "Lý do"
+            }
+        }
+    },
+
+    "addrole": {
+        "description": {
+            "en-US": "Add a role for user",
+            "vi": "Thêm 1 role cho người dùng"
+        },
+        "option": {
+            "member": {
+                "en-US": "Member to add role",
+                "vi": "Người cần được thêm vai trò"
+            },
+            "role": {
+                "en-US": "Role to add",
+                "vi": "Vai trò cần thêm"
+            }
+        }
+    },
+
+    "removerole": {
+        "description": {
+            "en-US": "Remove a role for user",
+            "vi": "Xóa 1 role cho người dùng"
+        },
+        "option": {
+            "member": {
+                "en-US": "Member to remove role",
+                "vi": "Người cần xóa vai trò"
+            },
+            "role": {
+                "en-US": "Role to remove",
+                "vi": "Vai trò cần xóa"
+            }
+        }
+    },
+
+    "say": {
+        "description": {
+            "en-US": "Make the say something for you",
+            "vi": "Khiến bot nói gì đó thay bạn"
+        },
+        "option": {
+            "message": {
+                "en-US": "The thing you want to say",
+                "vi": "Điều mà bạn muốn nói"
+            }
+        }
+    },
+
+    "warn": {
+        "description": {
+            "en-US": "Warn a member",
+            "vi": "Cảnh cáo người dùng"
+        },
+        "option": {
+            "member": {
+                "en-US": "Member to warn",
+                "vi": "Người cần cảnh cáo"
+            },
+            "reason": {
+                "en-US": "Reason",
+                "vi":"Lý do"
+            }
+        }
+    }
+}
