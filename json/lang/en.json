@@ -1,0 +1,164 @@
+{
+    "unknown": "Unknown",
+    "default_reason": "No reaso ",
+    "default_duration": "",
+    "error": "Error",
+    "Permisson_error": "Permission error",
+    "Not_enough_permission": "Không ",
+    "Successful": "Thành công",
+    "system": "Hệ thống",
+    "S_alert": "Cảnh báo",
+    "Command": "Lệnh",
+    "Not_exists": "không tồn tại",
+    "Missing_permission": "Bạn thiếu quyền",
+    "reason": "Lý do",
+    "Time": "Thời gian",
+    "payattention": "Chú ý",
+    "Performed_by": "Người thực hiện",
+    "Use_command_in_server": "Vui lòng dùng lệnh này trong máy chủ!",
+    "DM_failed_to_user": "Không thể gửi tin nhắn cho <{user}>",
+
+    "Require_user_ManageRoles_permission": "Bạn cần có quyền **Manage Roles** để dùng lệnh này.",
+
+
+
+    "_Comment-1": " //////////////// Event //////////////// ",
+    "user_is_afk": "Người dùng đang AFK",
+    "user_is_afk_description": "Người bạn vừa đề cập hiện đang AFK",
+
+    "user_back_from_afk": "DUMA ANH EM CHÚ Ý",
+    "user_back_from_afk_description": "đã online trở lại",
+
+
+    "_Comment-2": " //////////////// Lệnh  -- WARN -- ////////////////",
+    "Command_warn_description": "Cảnh cáo thành viên",
+    "Command_warn_describe_member": "Người cần cảnh cáo",
+
+    "Roles_not_higher_than_target": "Bạn không thể cảnh cáo người có vai trò cao hơn hoặc bằng bạn.",
+    "Can_not_warn_bot": "Không thể cảnh cáo bot.", 
+    "warn_in_7days": "Số cảnh cáo trong 7 ngày qua",
+    "total_warn": "Tổng cảnh cáo từ trước đến nay",
+    "warned": "Đã cảnh cáo",
+    "user_got_warned": "đã bị cảnh cáo",
+    "DM_warned_in_server": "⚠️ Bạn đã bị cảnh cáo tại server {guild}",
+    "DM_warned_in_server_description": "\nChú ý:\n1.Nếu bạn bị warn 3 lần, bạn sẽ bị mute 1 ngày\n2. Nếu bạn bị warn 6 lần, bạn sẽ bị mute 3 ngày\n3. Nếu bạn bị warn hơn 6 lần, bạn sẽ bị mute 7 ngày",
+
+    "You_have_been_muted": "❌❌❌ Bạn đã bị mute ❌❌❌",
+    "Muted_successful": "Đã mute thành công",
+
+    "3warn_in_1w": "Bị cảnh cáo 3 lần trong 1 tuần",
+    "You_have_been_muted_1day": "🚫 Bạn đã bị mute trong 1 ngày ở server **{guild}** vì bị cảnh cáo quá nhiều lần trong 1 tuần",
+    "Muted_successful_1day": "{user} đã bị mute trong 1 ngày.\n✏️ Lý do: `Bị cảnh cáo 3 lần trong 1 tuần`\n\nNgười thực hiện: {author}",
+
+    "6warn_in_1w": "Bị cảnh cáo 6 lần trong 1 tuần",
+    "You_have_been_muted_3day": "🚫 Bạn đã bị mute 3 ngày ở server **{guild}** vì bị cảnh cáo quá nhiều lần trong 1 tuần",
+    "Muted_successful_3day": "{user} đã bị mute trong 3 ngày.\n✏️ Lý do: `Bị cảnh cáo 6 lần trong 1 tuần`\n\nNgười thực hiện: {author}",
+
+    "More_than_6warn_in_1w": "Bị cảnh cáo hơn 6 lần trong 1 tuần",
+    "You_have_been_muted_7day": "🚫 Bạn đã bị mute 7 ngày ở server **{guild}** vì bị cảnh cáo quá nhiều lần trong 1 tuần",
+    "Muted_successful_7day": "{member.mention} đã bị mute trong 7 ngày.\n✏️ Lý do `Bị cảnh cáo hơn 6 lần trong 1 tuần`\n\nNgười thực hiện: {interaction.user.mention}",
+
+    "_Comment-3": " //////////////// Lệnh  -- SAY -- //////////////// ",
+    "Command_say_description": "Nhờ bot nói hộ bạn gì đó",
+    "Command_say_describe_message": "Điều mà bạn muốn nói",
+    "Message_sent": "Đã gửi!",
+    
+    "_Comment-4": " //////////////// Lệnh  -- ROLES == ADD ROLE ==  -- //////////////// ",
+    "Command_addrole_description": "Thêm một role cho người dùng",
+    "Command_addrole_describe_message_member": "Người cần được thêm role",
+    "Command_addrole_describe_message_role": "Role cần thêm",
+    "Bot_dont_have_addrole_permission": "Bot không có quyền thêm role này.",
+
+    "Already_got_role": "{user} đã có sẵn role `{role}`",
+    "addrole_success_description_p1":"Đã thêm role `{role}` cho {user}.\n\nNgười thực hiện: {author}",
+    "addrole_failed_error_occured": "Lỗi xảy ra",
+
+    "_Comment-5": " //////////////// Lệnh  -- ROLES == REMOVE ROLE ==  -- //////////////// ",
+    "Command_removerole_description": "Gỡ một role khỏi một người dùng",
+    "Command_removerole_describe_message_member": "Người bị gỡ role",
+    "Command_removerole_describe_message_role": "Role cần gỡ",
+    "User_dont_have_role_to_remove": "{user} không có role `{role}",
+    "Bot_dont_have_removerole_permission": "Bot không có quyền gỡ role này.",
+    "Removed_role_from_user": "Đã gỡ role `{role}` khỏi {user}.\n\nNgười thực hiện: {author}",
+    
+    "_Comment-6": " //////////////// Lệnh  -- MUTE == MUTE ==  -- //////////////// ",
+    "Command_mute_description": "Cấm người dùng gửi tin nhắn",
+    "Command_mute_describe_message_member": "Người cần mute",
+    "Command_mute_describe_message_duration": "Thời gian (10s, 5m, 1h, 2d) hoặc bỏ trống để mute vĩnh viễn",
+
+    "Cannot_find_muted_role_Pls_create": "Không tìm thấy role 'muted'. Vui lòng tạo role này trước.",
+    "User_dont_have_enough_mute_permission": "Bạn không thể mute người có role cao hơn hoặc bằng bạn.",
+    "Bot_dont_have_enough_mute_permission": "Bot không có đủ quyền để mute người dùng này.",
+
+    "user_already_muted": "{user} đã bị mute rồi.",
+    "Time_format_error": "Lỗi định dạng thời gian",
+    "Time_format_error_description": "Định dạng thời gian không hợp lệ. Vui lòng nhập: 10s, 5m, 1h, 2d hoặc bỏ trống để mute vĩnh viễn.",
+
+    "muted_forever": "Đã mute vĩnh viễn",
+    "muted_forever_description": "{user} đã bị mute vĩnh viễn.\n✏️ Lý do: `{reason}`\n\nNgười thực hiện: {author}",
+    "muted_successful": "Đã mute thành công",
+    "muted_successful_duration": "{user} đã bị mute trong `{duration}`.\n✏️ Lý do: `{reason}`\n\nNgười thực hiện: {author}",
+    
+    "_Comment-7": " //////////////// Lệnh  -- MUTE == UNMUTE ==  -- //////////////// ",
+    "Command_unmute_description": "Cho phép người dùng gửi tin nhắn",
+    "Command_unmute_describe_message_member": "Người bị mute",
+
+    "User_dont_have_enough_unmute_permission": "Bạn không thể unmute người có role cao hơn hoặc bằng bạn.",
+    "Bot_dont_have_enough_unmute_permission": "Bot không có đủ quyền để unmute người dùng này.",
+    
+    "User_is_not_muted": "{user} không bị mute.",
+    "Unmuted_successful": "Đã unmute thành công",
+    "Unmuted_successful_description": "{user} đã được unmute.\n✏️ Lý do: `{reason}`\n\nNgười thực hiện: {author}",
+    
+    "_Comment-8": " //////////////// Lệnh  -- MUTE == LISTMUTE ==  -- //////////////// ",
+    "Command_listmute_description": "Hiển thị danh sách các thành viên đang bị mute",
+    "Role_muted_not_exists": "Role 'muted' không tồn tại trong máy chủ.",
+
+    "No_user_muted": "Không có ai bị mute",
+    "No_user_muted_description": "Hiện tại không có thành viên nào đang bị mute.",
+
+    "List_muted_users": "Danh sách thành viên đang bị mute",
+    "List_muted_users_description": "**Tổng cộng: {totalUser} người bị mute**",
+
+    "Listing_muted_users_Name": "Tên",
+    "Listing_muted_users_duration": "Thời gian mute",
+    "Listing_muted_users_Started_mutedTime": "Thời diểm mute",
+    "Listing_muted_users_End_mutedTime": "Kết thúc mute",
+    
+    "_Comment-9": " //////////////// Lệnh  -- KICK -- //////////////// ",
+    "Command_Kick_description": "Đuổi người dùng khỏi giờ máy chủ",
+    "Command_Kick_describe_message_member": "Người cần đuổi",
+
+    "User_cannot_kick_user_have_higher_role": "Bạn không thể đá người có role cao hơn bạn.",
+    "Bot_dont_have_enough_kick_permission": "Bot không có đủ quyền để đuổi người dùng này.",
+
+    "Kicked_successful_description": "{user} đã bị đá khỏi máy chủ.\nLý do: `{reason}`.\n\nNgười thực hiện: **{author}**",
+    "DM_user_have_been_kicked": "Bạn đã bị đá khỏi máy chủ **{guild}**.\nLý do: `{reason}`.\n\nNgười thực hiện: {author}",
+
+    "_Comment-10": " //////////////// Lệnh  -- BAN  == BAN ==  -- //////////////// ",
+    "Command_ban_description": "Cấm người dùng khỏi máy chủ",
+    "Command_ban_describe_message_member": "Người bị cấm",
+
+    "User_cannot_ban_user_have_higher_role": "Bạn không thể cấm người có role cao hơn bạn.",
+    "Bot_dont_have_enough_ban_permission": "Bot không có đủ quyền để cấm người dùng này.",
+    
+    "Banned_successful_description": "{user} đã bị cấm khỏi máy chủ.\nLý do: `{reason}`.\n\nNgười thực hiện: **{author}**",
+    "DM_user_have_been_banned": "Bạn đã bị cấm khỏi máy chủ **{guild}**.\nLý do: `{reason}`.\n\nNgười thực hiện: **{author}**",
+
+    "_Comment-11": " //////////////// Lệnh  -- BAN  == UNBAN ==  -- //////////////// ",
+    "Command_unban_description": "Bỏ cấm người dùng khỏi máy chủ",
+    "Command_unban_describe_message_member": "ID của người bị cấm",
+
+    "Unbanned_successful_description": "Đã mở cấm cho người dùng **{user}**.\nLý do: `{reason}`.\n\nNgười thực hiện: {author}",
+    "DM_user_have_been_unbanned": "Bạn đã được mở cấm khỏi máy chủ **{guild}**.\nLý do: `{reason}`.\n\nNgười thực hiện: {author}",
+
+    "user_is_not_banned": "Người dùng này không bị cấm trong máy chủ",
+
+    "_Comment-12": " //////////////// Lệnh  -- BAN  == UNBAN ==  -- //////////////// ",
+    "Command_afk_description": "Đặt trạng thái AFK",
+
+    "Already_afk": "Bạn đã AFK TỪ TRƯỚC!",
+    "Set_afk_successful_description": "{user} đã được đặt trạng thái AFK.\n✏️ Lý do: **{reason}**"
+
+
+}
