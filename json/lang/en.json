@@ -1,217 +1,217 @@
-{ 
-"unknown": "Unknown", 
-"default_reason": "No reason", 
-"default_duration": "Permanent", 
-"error": "Error", 
-"Permission_error": "Permission error", 
-"Not_enough_permission": "Not enough permission", 
-"Successful": "Success", 
-"system": "System", 
-"S_alert": "Alert", 
-"Command": "Command", 
-"Not_exists": "Not exists", 
-"Missing_permission": "You do not have enough permission", 
-"reason": "Reason", 
-"Time": "Time", 
-"payattention": "Pay attention", 
-"Performed_by": "Performed by", 
-"Use_command_in_server": "Please use command in server!", 
-"DM_failed_to_user": "Cannot send DM to <{user}>", 
+    { 
+    "unknown": "Unknown", 
+    "default_reason": "No reason", 
+    "default_duration": "Permanent", 
+    "error": "Error", 
+    "Permission_error": "Permission error", 
+    "Not_enough_permission": "Not enough permission", 
+    "Successful": "Success", 
+    "system": "System", 
+    "S_alert": "Alert", 
+    "Command": "Command", 
+    "Not_exists": "Not exists", 
+    "Missing_permission": "You do not have enough permission", 
+    "reason": "Reason", 
+    "Time": "Time", 
+    "payattention": "Pay attention", 
+    "Performed_by": "Performed by", 
+    "Use_command_in_server": "Please use command in server!", 
+    "DM_failed_to_user": "Cannot send DM to <{user}>", 
 
-"Require_user_ManageRoles_permission": "You need **Manage Roles** permission to use this command.", 
+    "Require_user_ManageRoles_permission": "You need **Manage Roles** permission to use this command.", 
 
-"_Comment-1": " ///////////////// Event //////////////// ", 
-"user_is_afk": "User is AFK", 
-"user_is_afk_description": "The user you mentioned is AFK", 
+    "_Comment-1": " ///////////////// Event //////////////// ", 
+    "user_is_afk": "User is AFK", 
+    "user_is_afk_description": "The user you mentioned is AFK", 
 
-"user_back_from_afk": "BRO IS BACK", 
-"user_back_from_afk_description": "{user} is online", 
+    "user_back_from_afk": "BRO IS BACK", 
+    "user_back_from_afk_description": "{user} is online", 
 
-"_Comment-2": " //////////////// Command -- WARN -- ////////////////", 
-"Command_warn_description": "Warn a user", 
-"Command_warn_describe_member": "The user needs a warn", 
+    "_Comment-2": " //////////////// Command -- WARN -- ////////////////", 
+    "Command_warn_description": "Warn a user", 
+    "Command_warn_describe_member": "The user needs a warn", 
 
-"Roles_not_higher_than_target": "You cannot warn user to have higher or equal position to you.", 
-"Can_not_warn_bot": "Cannot warn bot.", 
-"warn_in_7days": "Total warnings in 7 days", 
-"total_warn": "Total warnings issued to date", 
-"warned": "Warned", 
-"user_got_warned": "is warned", 
-"DM_warned_in_server": "⚠️ You have been warned in server {guild}", 
-"DM_warned_in_server_description": "\nAttention:\n1.If you get 3 warnings, you will be muted for 1 day.\n2. If you get 6 warnings, you will be muted for 3 days\n3. If you get 6 warnings, you will be muted for 7 days", 
+    "Roles_not_higher_than_target": "You cannot warn user to have higher or equal position to you.", 
+    "Can_not_warn_bot": "Cannot warn bot.", 
+    "warn_in_7days": "Total warnings in 7 days", 
+    "total_warn": "Total warnings issued to date", 
+    "warned": "Warned", 
+    "user_got_warned": "is warned", 
+    "DM_warned_in_server": "⚠️ You have been warned in server {guild}", 
+    "DM_warned_in_server_description": "\nAttention:\n1.If you get 3 warnings, you will be muted for 1 day.\n2. If you get 6 warnings, you will be muted for 3 days\n3. If you get 6 warnings, you will be muted for 7 days", 
 
-"You_have_been_muted": "❌❌❌ You have been muted ❌❌❌",
+    "You_have_been_muted": "❌❌❌ You have been muted ❌❌❌",
 
-"Muted_successful": "Muted successfully",
+    "Muted_successful": "Muted successfully",
 
-"3warn_in_1w": "Received 3 warnings in 1 week.",
+    "3warn_in_1w": "Received 3 warnings in 1 week.",
 
-"You_have_been_muted_1day": "🚫 You have been muted for 1 day on server **{guild}** for receiving too many warnings in 1 week",
+    "You_have_been_muted_1day": "🚫 You have been muted for 1 day on server **{guild}** for receiving too many warnings in 1 week",
 
-"Muted_successful_1day": "{user} has been muted for 1 day.\n✏️ Reason: `Received 3 warnings in 1 week`\n\nAuthor: {author}",
+    "Muted_successful_1day": "{user} has been muted for 1 day.\n✏️ Reason: `Received 3 warnings in 1 week`\n\nAuthor: {author}",
 
-"6warn_in_1w": "Received 6 warnings in 1 week",
+    "6warn_in_1w": "Received 6 warnings in 1 week",
 
-"You_have_been_muted_3day": "🚫 You have been muted for 3 days on server **{guild}** for receiving too many warnings multiple times in 1 week",
+    "You_have_been_muted_3day": "🚫 You have been muted for 3 days on server **{guild}** for receiving too many warnings multiple times in 1 week",
 
-"Muted_successful_3day": "{user} has been muted for 3 days.\n✏️ Reason: `Received 6 warnings in 1 week`\n\nExecutor: {author}",
+    "Muted_successful_3day": "{user} has been muted for 3 days.\n✏️ Reason: `Received 6 warnings in 1 week`\n\nExecutor: {author}",
 
-"More_than_6warn_in_1w": "Received more than 6 warnings in 1 week",
+    "More_than_6warn_in_1w": "Received more than 6 warnings in 1 week",
 
-"You_have_been_muted_7day": "🚫 You have been muted for 7 days on server **{guild}** for receiving too many warnings in 1 week",
+    "You_have_been_muted_7day": "🚫 You have been muted for 7 days on server **{guild}** for receiving too many warnings in 1 week",
 
-"Muted_successful_7day": "{member.mention} has been muted for 7 days.\n✏️ Reason: `Received more than 6 warnings in 1 week`\n\nExecutor: {interaction.user.mention}",
+    "Muted_successful_7day": "{member.mention} has been muted for 7 days.\n✏️ Reason: `Received more than 6 warnings in 1 week`\n\nExecutor: {interaction.user.mention}",
 
-"_Comment-3": " ///////////////// Command -- SAY -- //////////////// ",
+    "_Comment-3": " ///////////////// Command -- SAY -- //////////////// ",
 
-"Command_say_description": "Ask the bot to say something for you",
+    "Command_say_description": "Ask the bot to say something for you",
 
-"Command_say_describe_message": "What you want to say",
+    "Command_say_describe_message": "What you want to say",
 
-"Message_sent": "Sent!",
+    "Message_sent": "Sent!",
 
-"_Comment-4": " //////////////// Command -- ROLES == ADD ROLE == -- //////////////// ",
+    "_Comment-4": " //////////////// Command -- ROLES == ADD ROLE == -- //////////////// ",
 
-"Command_addrole_description": "Add a role for the user",
+    "Command_addrole_description": "Add a role for the user",
 
-"Command_addrole_describe_message_member": "The person whose role needs to be added",
+    "Command_addrole_describe_message_member": "The person whose role needs to be added",
 
-"Command_addrole_describe_message_role": "Role to add",
+    "Command_addrole_describe_message_role": "Role to add",
 
-"Bot_dont_have_addrole_permission": "Bot does not have permission to add this role.",
+    "Bot_dont_have_addrole_permission": "Bot does not have permission to add this role.",
 
-"Already_got_role": "{user} already has role `{role}`",
+    "Already_got_role": "{user} already has role `{role}`",
 
-"addrole_success_description_p1": "Added role `{role}` to {user}.\n\nExecutor: {author}",
+    "addrole_success_description_p1": "Added role `{role}` to {user}.\n\nExecutor: {author}",
 
-"addrole_failed_error_occured": "An error occurred",
+    "addrole_failed_error_occured": "An error occurred",
 
-"_Comment-5": " //////////////// Command -- ROLES == REMOVE ROLE == -- //////////////// ",
+    "_Comment-5": " //////////////// Command -- ROLES == REMOVE ROLE == -- //////////////// ",
 
-"Command_removerole_description": "Removed a role from a user",
+    "Command_removerole_description": "Removed a role from a user",
 
-"Command_removerole_describe_message_member": "The person whose role was removed",
+    "Command_removerole_describe_message_member": "The person whose role was removed",
 
-"Command_removerole_describe_message_role": "The role to be removed",
+    "Command_removerole_describe_message_role": "The role to be removed",
 
-"User_dont_have_role_to_remove": "{user} does not have the role `{role}",
+    "User_dont_have_role_to_remove": "{user} does not have the role `{role}",
 
-"Bot_dont_have_removerole_permission": "Bot does not have permission to remove this role.",
+    "Bot_dont_have_removerole_permission": "Bot does not have permission to remove this role.",
 
-"Removed_role_from_user": "The role `{role}` has been removed from {user}.\n\nExecutor: {author}",
+    "Removed_role_from_user": "The role `{role}` has been removed from {user}.\n\nExecutor: {author}",
 
-"_Comment-6": " //////////////// Command -- MUTE == MUTE == -- //////////////// ",
+    "_Comment-6": " //////////////// Command -- MUTE == MUTE == -- //////////////// ",
 
-"Command_mute_description": "Forbidden user from sending messages",
+    "Command_mute_description": "Forbidden user from sending messages",
 
-"Command_mute_describe_message_member": "Member to mute",
+    "Command_mute_describe_message_member": "Member to mute",
 
-"Command_mute_describe_message_duration": "Time (10s, 5m, 1h, 2d) or leave blank to permanently mute",
+    "Command_mute_describe_message_duration": "Time (10s, 5m, 1h, 2d) or leave blank to permanently mute",
 
-"Cannot_find_muted_role_Pls_create": "No role 'muted' found. Please create this role first.",
+    "Cannot_find_muted_role_Pls_create": "No role 'muted' found. Please create this role first.",
 
-"User_dont_have_enough_mute_permission": "You cannot mute a user with a role higher than or equal to yours.",
+    "User_dont_have_enough_mute_permission": "You cannot mute a user with a role higher than or equal to yours.",
 
-"Bot_dont_have_enough_mute_permission": "Bot does not have sufficient permissions to mute this user.",
+    "Bot_dont_have_enough_mute_permission": "Bot does not have sufficient permissions to mute this user.",
 
-"user_already_muted": "{user} is already muted.",
+    "user_already_muted": "{user} is already muted.",
 
-"Time_format_error": "Time formatting error",
+    "Time_format_error": "Time formatting error",
 
-"Time_format_error_description": "Invalid time format. Please enter: 10s, 5m, 1h, 2d or leave blank to permanently mute.",
+    "Time_format_error_description": "Invalid time format. Please enter: 10s, 5m, 1h, 2d or leave blank to permanently mute.",
 
-"muted_forever": "Permanently muted",
+    "muted_forever": "Permanently muted",
 
-"muted_forever_description": "{user} has been permanently muted.\n✏️ Reason: `{reason}`\n\nAuthor: {author}",
+    "muted_forever_description": "{user} has been permanently muted.\n✏️ Reason: `{reason}`\n\nAuthor: {author}",
 
-"muted_successful": "Successfully muted",
+    "muted_successful": "Successfully muted",
 
-"muted_successful_duration": "{user} has been muted for `{duration}`.\n✏️ Reason: `{reason}`\n\nAuthor: {author}",
+    "muted_successful_duration": "{user} has been muted for `{duration}`.\n✏️ Reason: `{reason}`\n\nAuthor: {author}",
 
-"_Comment-7": " //////////////// Command -- MUTE == UNMUTE == -- //////////////// ",
+    "_Comment-7": " //////////////// Command -- MUTE == UNMUTE == -- //////////////// ",
 
-"Command_unmute_description": "Unmute user send message",
+    "Command_unmute_description": "Unmute user send message",
 
-"Command_unmute_describe_message_member": "The person is muted",
+    "Command_unmute_describe_message_member": "The person is muted",
 
-"User_dont_have_enough_unmute_permission": "You cannot unmute a person with a role higher than or equal to yours.",
+    "User_dont_have_enough_unmute_permission": "You cannot unmute a person with a role higher than or equal to yours.",
 
-"Bot_dont_have_enough_unmute_permission": "The bot does not have sufficient permissions to unmute this user.",
+    "Bot_dont_have_enough_unmute_permission": "The bot does not have sufficient permissions to unmute this user.",
 
-"User_is_not_muted": "{user} is not muted.",
+    "User_is_not_muted": "{user} is not muted.",
 
-"Unmuted_successful": "Unmute successful",
+    "Unmuted_successful": "Unmute successful",
 
-"Unmuted_successful_description": "{user} has been unmute.\n✏️ Reason: `{reason}`\n\nExecutor: {author}",
+    "Unmuted_successful_description": "{user} has been unmute.\n✏️ Reason: `{reason}`\n\nExecutor: {author}",
 
-"_Comment-8": " //////////////// Command -- MUTE == LISTMUTE == -- //////////////// ",
+    "_Comment-8": " //////////////// Command -- MUTE == LISTMUTE == -- //////////////// ",
 
-"Command_listmute_description": "Displays a list of muted members",
+    "Command_listmute_description": "Displays a list of muted members",
 
-"Role_muted_not_exists": "Role 'muted' does not exist on the server.",
+    "Role_muted_not_exists": "Role 'muted' does not exist on the server.",
 
-"No_user_muted": "No one is muted",
+    "No_user_muted": "No one is muted",
 
-"No_user_muted_description": "No members are currently muted.",
+    "No_user_muted_description": "No members are currently muted.",
 
-"List_muted_users": "List of muted members",
+    "List_muted_users": "List of muted members",
 
-"List_muted_users_description": "**Total: {totalUser} muted users**",
+    "List_muted_users_description": "**Total: {totalUser} muted users**",
 
-"Listing_muted_users_Name": "Name",
+    "Listing_muted_users_Name": "Name",
 
-"Listing_muted_users_duration": "Mute duration",
+    "Listing_muted_users_duration": "Mute duration",
 
-"Listing_muted_users_Started_mutedTime": "Mute start time",
+    "Listing_muted_users_Started_mutedTime": "Mute start time",
 
-"Listing_muted_users_End_mutedTime": "End of mute",
+    "Listing_muted_users_End_mutedTime": "End of mute",
 
-"_Comment-9": " //////////////// Command -- KICK -- //////////////// ",
+    "_Comment-9": " //////////////// Command -- KICK -- //////////////// ",
 
-"Command_Kick_description": "Kick user from server time",
+    "Command_Kick_description": "Kick user from server time",
 
-"Command_Kick_describe_message_member": "User to kick",
+    "Command_Kick_describe_message_member": "User to kick",
 
-"User_cannot_kick_user_have_higher_role": "You cannot kick a user with a higher role than you.",
+    "User_cannot_kick_user_have_higher_role": "You cannot kick a user with a higher role than you.",
 
-"Bot_dont_have_enough_kick_permission": "Bot does not have enough permission to kick this user.",
+    "Bot_dont_have_enough_kick_permission": "Bot does not have enough permission to kick this user.",
 
-"Kicked_successful_description": "{user} has been kicked from the server.\nReason: `{reason}`.\n\nExecutor: **{author}**",
+    "Kicked_successful_description": "{user} has been kicked from the server.\nReason: `{reason}`.\n\nExecutor: **{author}**",
 
-"DM_user_have_been_kicked": "You have been kicked from the server **{guild}**.\nReason: `{reason}`.\nExecutor: {author}",
+    "DM_user_have_been_kicked": "You have been kicked from the server **{guild}**.\nReason: `{reason}`.\nExecutor: {author}",
 
-"_Comment-10": " //////////////// Command -- BAN == BAN == -- //////////////// ",
+    "_Comment-10": " //////////////// Command -- BAN == BAN == -- //////////////// ",
 
-"Command_ban_description": "Banned user from the server",
+    "Command_ban_description": "Banned user from the server",
 
-"Command_ban_describe_message_member": "Banned person",
+    "Command_ban_describe_message_member": "Banned person",
 
-"User_cannot_ban_user_have_higher_role": "You cannot ban a user with a higher role than you.",
+    "User_cannot_ban_user_have_higher_role": "You cannot ban a user with a higher role than you.",
 
-"Bot_dont_have_enough_ban_permission": "Bot does not have sufficient permissions to ban this user.",
+    "Bot_dont_have_enough_ban_permission": "Bot does not have sufficient permissions to ban this user.",
 
-"Banned_successful_description": "{user} has been banned from the server owner.\nReason: `{reason}`.\n\nExecutor: **{author}**",
+    "Banned_successful_description": "{user} has been banned from the server owner.\nReason: `{reason}`.\n\nExecutor: **{author}**",
 
-"DM_user_have_been_banned": "You have been banned from server **{guild}**.\nReason: `{reason}`.\n\nExecutor: **{author}**",
+    "DM_user_have_been_banned": "You have been banned from server **{guild}**.\nReason: `{reason}`.\n\nExecutor: **{author}**",
 
-"_Comment-11": " //////////////// Command -- BAN == UNBAN == -- //////////////// ",
+    "_Comment-11": " //////////////// Command -- BAN == UNBAN == -- //////////////// ",
 
-"Command_unban_description": "Unbanned user from server",
+    "Command_unban_description": "Unbanned user from server",
 
-"Command_unban_describe_message_member": "ID of banned member",
+    "Command_unban_describe_message_member": "ID of banned member",
 
-"Unbanned_successful_description": "Unbanned user **{user}**.\nReason: `{reason}`.\n\nExecutor: {author}",
+    "Unbanned_successful_description": "Unbanned user **{user}**.\nReason: `{reason}`.\n\nExecutor: {author}",
 
-"DM_user_have_been_unbanned": "You have been unbanned from server **{guild}**.\nReason: `{reason}`.\nExecutor: {author}",
+    "DM_user_have_been_unbanned": "You have been unbanned from server **{guild}**.\nReason: `{reason}`.\nExecutor: {author}",
 
-"user_is_not_banned": "This user is not banned from the server",
+    "user_is_not_banned": "This user is not banned from the server",
 
-"_Comment-12": " //////////////// Command -- BAN == UNBAN == -- //////////////// ",
+    "_Comment-12": " //////////////// Command -- BAN == UNBAN == -- //////////////// ",
 
-"Command_afk_description": "Set AFK status",
+    "Command_afk_description": "Set AFK status",
 
-"Already_afk": "You were ALREADY AFK!",
+    "Already_afk": "You were ALREADY AFK!",
 
-"Set_afk_successful_description": "{user} has been set AFK.\n✏️ Reason: **{reason}**"
+    "Set_afk_successful_description": "{user} has been set AFK.\n✏️ Reason: **{reason}**"
 
 }

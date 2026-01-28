@@ -20,8 +20,6 @@
 
     "Require_user_ManageRoles_permission": "Bạn cần có quyền **Manage Roles** để dùng lệnh này.",
 
-
-
     "_Comment-1": " //////////////// Event //////////////// ",
     "user_is_afk": "Người dùng đang AFK",
     "user_is_afk_description": "Người bạn vừa đề cập hiện đang AFK",
